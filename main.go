@@ -55,39 +55,31 @@ func listener(local net.PacketConn, size int) {
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	input_cmd := binary.BigEndian.Uint64(data[1:8])
+	cmd := binary.BigEndian.Uint64(data[1:8])
 	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
-	switch input_cmd {
+	switch cmd {
 		case 0:
-			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(output_cmd, uint64(1))
-			output_payload := []byte("BONG")
-			output := append(output_cmd, output_payload)
-			broadcast_message(local, output)
+			broadcast_message(local, build_packet(cmd+1, "BONG"))
 		case 1:
-			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(output_cmd, uint64(2))
-			output_payload := []byte("PING")
-			output := append(output_cmd, output_payload)
-			send_message(local, output, remote)
+			send_message(local, build_packet(cmd+1, "PING"), remote)
 		case 2:
-			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(output_cmd, uint64(3))
-			output_payload := []byte("PONG")
-			output := append(output_cmd, output_payload)
-			send_message(local, output, remote)
+			send_message(local, build_packet(cmd+1, "PONG"), remote)
 	}
+}
+
+func build_packet (cmd int, payload string) []byte {
+	output_cmd := make([]byte, 8)
+	binary.LittleEndian.PutUint64(output_cmd, uint64(cmd))
+	output_payload := []byte(payload)
+	output := []byte{}
+	output = append(output_cmd, output_payload)
+	return output
 }
 
 func main() {
 	port := 37419
 	size := 1024
 	socket,_ := net.ListenPacket("udp4", ":"+strconv.Itoa(port))
-	output_cmd := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(1))
-	output_payload := []byte("BING")
-	output := append(output_cmd, output_payload)
-
-	broadcast_message(socket, output)
+	broadcast_message(socket, build_packet(0, "BING"))
 	listener(socket, size)
 }
