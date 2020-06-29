@@ -63,19 +63,19 @@ func handler(local net.PacketConn, data []byte, remote net.Addr) {
 		case 0:
 			output_cmd := make([]byte, 8)
 			binary.LittleEndian.PutUint64(b, uint64(1))
-			output_payload := b"BONG"
+			output_payload := []byte("BONG")
 			output := append(output_cmd, output_payload)
 			broadcast_message(local, output)
 		case 1:
 			output_cmd := make([]byte, 8)
 			binary.LittleEndian.PutUint64(b, uint64(2))
-			output_payload := b"PING"
+			output_payload := []byte("PING")
 			output := append(output_cmd, output_payload)
 			send_message(local, output, remote)
 		case 2:
 			output_cmd := make([]byte, 8)
 			binary.LittleEndian.PutUint64(b, uint64(3))
-			output_payload := b"PONG"
+			output_payload := []byte("PONG")
 			output := append(output_cmd, output_payload)
 			send_message(local, output, remote)
 	}
@@ -85,6 +85,11 @@ func main() {
 	port := 37419
 	size := 1024
 	socket,_ := net.ListenPacket("udp4", ":"+strconv.Itoa(port))
-	broadcast_message(socket, "BING")
+	output_cmd := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(1))
+	output_payload := []byte("BING")
+	output := append(output_cmd, output_payload)
+
+	broadcast_message(socket, output)
 	listener(socket, size)
 }
