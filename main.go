@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-	"encoding/binary"
 )
 
 func getLocalIPs() ([]string) {
@@ -35,7 +34,7 @@ func inSlice(slice []string, val string) (bool) {
 }
 
 func send_message(local net.PacketConn, data []byte, remote net.Addr) {
-	fmt.Printf("% 08b", data[0])
+	fmt.Printf("%08b ", data[0])
 	fmt.Printf("Sent %s to: %s\n", string(data[1:]), remote.String())
 	local.WriteTo(data, remote)
 }
@@ -56,22 +55,20 @@ func listener(local net.PacketConn, size int) {
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	cmd := binary.BigEndian.Uint8(data[0])
 	fmt.Printf("% 08b", data[0])
 	fmt.Printf("Recv %s fr: %s\n", string(data[1:]), remote.String())
-	switch cmd {
-		case uint8(0):
-			broadcast_message(local, build_packet(uint8(1), "BONG"))
-		case uint8(1):
-			send_message(local, build_packet(uint8(2), "PING"), remote)
-		case uint8(2):
-			send_message(local, build_packet(uint8(3), "PONG"), remote)
+	switch data[0] {
+		case byte(0):
+			broadcast_message(local, build_packet(1, "BONG"))
+		case byte(1):
+			send_message(local, build_packet(2, "PING"), remote)
+		case byte(2):
+			send_message(local, build_packet(3, "PONG"), remote)
 	}
 }
 
-func build_packet (cmd uint8, payload string) []byte {
-	output := make([]byte, 1)
-	binary.BigEndian.PutUint8(output, uint8(cmd))
+func build_packet (cmd int, payload string) []byte {
+	output := []byte{byte(cmd)}
 	output = append(output, []byte(payload)...)
 	return output
 }
