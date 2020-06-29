@@ -61,9 +61,9 @@ func handler(local net.PacketConn, data []byte, remote net.Addr) {
 		case 0:
 			broadcast_message(local, build_packet(uint64(1), "BONG"))
 		case 1:
-			send_message(local, build_packet(uint64(1), "PING"), remote)
+			send_message(local, build_packet(uint64(2), "PING"), remote)
 		case 2:
-			send_message(local, build_packet(uint64(1), "PONG"), remote)
+			send_message(local, build_packet(uint64(3), "PONG"), remote)
 	}
 }
 
