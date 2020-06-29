@@ -56,13 +56,16 @@ func listener(local net.PacketConn, size int) {
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
 	cmd := binary.BigEndian.Uint64(data[0:8])
+	for _, n := range(cmd) {
+        fmt.Printf("% 08b", n)
+    }
 	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
 	switch cmd {
-		case 0:
+		case uint64(0):
 			broadcast_message(local, build_packet(uint64(1), "BONG"))
-		case 1:
+		case uint64(1):
 			send_message(local, build_packet(uint64(2), "PING"), remote)
-		case 2:
+		case uint64(2):
 			send_message(local, build_packet(uint64(3), "PONG"), remote)
 	}
 }
