@@ -35,6 +35,9 @@ func inSlice(slice []string, val string) (bool) {
 }
 
 func send_message(local net.PacketConn, data []byte, remote net.Addr) {
+	for _, n := range(data[0:8]) {
+        fmt.Printf("% 08b", n)
+    }
 	fmt.Printf("Sent %s to: %s\n", string(data[8:]), remote.String())
 	local.WriteTo(data, remote)
 }
