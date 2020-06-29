@@ -35,10 +35,8 @@ func inSlice(slice []string, val string) (bool) {
 }
 
 func send_message(local net.PacketConn, data []byte, remote net.Addr) {
-	for _, n := range(data[0:8]) {
-        fmt.Printf("% 08b", n)
-    }
-	fmt.Printf("Sent %s to: %s\n", string(data[8:]), remote.String())
+	fmt.Printf("% 08b", data[0])
+	fmt.Printf("Sent %s to: %s\n", string(data[1:]), remote.String())
 	local.WriteTo(data, remote)
 }
 func broadcast_message(local net.PacketConn, data []byte) {
@@ -58,24 +56,22 @@ func listener(local net.PacketConn, size int) {
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	cmd := binary.BigEndian.Uint64(data[0:8])
-	for _, n := range(data[0:8]) {
-        fmt.Printf("% 08b", n)
-    }
-	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
+	cmd := binary.BigEndian.Uint8(data[0])
+	fmt.Printf("% 08b", data[0])
+	fmt.Printf("Recv %s fr: %s\n", string(data[1:]), remote.String())
 	switch cmd {
-		case uint64(0):
-			broadcast_message(local, build_packet(uint64(1), "BONG"))
-		case uint64(1):
-			send_message(local, build_packet(uint64(2), "PING"), remote)
-		case uint64(2):
-			send_message(local, build_packet(uint64(3), "PONG"), remote)
+		case uint8(0):
+			broadcast_message(local, build_packet(uint8(1), "BONG"))
+		case uint8(1):
+			send_message(local, build_packet(uint8(2), "PING"), remote)
+		case uint8(2):
+			send_message(local, build_packet(uint8(3), "PONG"), remote)
 	}
 }
 
-func build_packet (cmd uint64, payload string) []byte {
-	output := make([]byte, 8)
-	binary.BigEndian.PutUint64(output, uint64(cmd))
+func build_packet (cmd uint8, payload string) []byte {
+	output := make([]byte, 1)
+	binary.BigEndian.PutUint8(output, uint8(cmd))
 	output = append(output, []byte(payload)...)
 	return output
 }
