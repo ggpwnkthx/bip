@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 	"net"
-	"strconv"
 )
 
-func getLocalIPs() ([]string) {
-	output := make([]string, 0)
+func getLocalIPs() ([]net.IP) {
+	output := make([]net.IP, 0)
 	ifaces,_ := net.Interfaces()
 	for _, i := range ifaces {
 		addrs,_ := i.Addrs()
@@ -19,14 +18,14 @@ func getLocalIPs() ([]string) {
 			case *net.IPAddr:
 					ip = v.IP
 			}
-			output = append(output, ip.String())
+			output = append(output, ip)
 		}
 	}
 	return output
 }
-func inSlice(slice []string, val string) (bool) {
+func inSlice(slice []net.IP, val net.IP) (bool) {
     for _, item := range slice {
-        if item == val {
+        if item.Equal(val) {
             return true
         }
     }
@@ -39,8 +38,8 @@ func send_message(local net.PacketConn, data []byte, remote net.Addr) {
 	local.WriteTo(data, remote)
 }
 func broadcast_message(local net.PacketConn, data []byte) {
-	localUDP,_ := net.ResolveUDPAddr(local.LocalAddr().Network(), local.LocalAddr().String())
-	remote,_ := net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(localUDP.Port))
+	_,port,_ := net.SplitHostPort(local.LocalAddr().String())
+	remote,_ := net.ResolveUDPAddr("udp4", "255.255.255.255:"+port)
 	send_message(local, data, remote)
 }
 func listener(local net.PacketConn, size int) {
@@ -49,7 +48,7 @@ func listener(local net.PacketConn, size int) {
 		data := make([]byte, size)
 		len,remote,_ := local.ReadFrom(data)
 		remoteUDP,_ := net.ResolveUDPAddr(remote.Network(), remote.String())
-		if ! inSlice(filter, remoteUDP.IP.String()) {
+		if ! inSlice(filter, remoteUDP.IP) {
 			handler(local, data[:len], remote)
 		}
 	}
@@ -74,9 +73,9 @@ func build_packet (cmd int, payload string) []byte {
 }
 
 func main() {
-	port := 37419
+	port := "37419"
 	size := 1024
-	socket,_ := net.ListenPacket("udp4", ":"+strconv.Itoa(port))
+	socket,_ := net.ListenPacket("udp4", ":"+port)
 	broadcast_message(socket, build_packet(0, "BING"))
 	listener(socket, size)
 }
