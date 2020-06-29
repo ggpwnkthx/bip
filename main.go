@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 	"strconv"
+	"encoding/binary"
 )
 
 func getLocalIPs() ([]string) {
@@ -34,11 +35,11 @@ func inSlice(slice []string, val string) (bool) {
     return false
 }
 
-func send_message(local net.PacketConn, message string, remote net.Addr) {
+func send_message(local net.PacketConn, data []byte, remote net.Addr) {
 	fmt.Printf("Sent %s to: %s\n", message, remote.String())
 	local.WriteTo([]byte(message), remote)
 }
-func broadcast_message(local net.PacketConn, message string) {
+func broadcast_message(local net.PacketConn, data []byte) {
 	localUDP,_ := net.ResolveUDPAddr(local.LocalAddr().Network(), local.LocalAddr().String())
 	remote,_ := net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(localUDP.Port))
 	send_message(local, message, remote)
@@ -50,21 +51,33 @@ func listener(local net.PacketConn, size int) {
 		len,remote,_ := local.ReadFrom(data)
 		remoteUDP,_ := net.ResolveUDPAddr(remote.Network(), remote.String())
 		if ! inSlice(filter, remoteUDP.IP.String()) {
-			handler(local, string(data[:len]), remote)
+			handler(local, data[:len], remote)
 		}
 	}
 }
-func handler(local net.PacketConn, data string, remote net.Addr) {
-	command := strings.Fields(data)
-	cmd := strings.ToUpper(command[0])
-	fmt.Printf("Recv %s fr: %s\n", cmd, remote.String())
-	switch cmd {
-		case "BING":
-			broadcast_message(local, "BONG")
-		case "BONG":
-			send_message(local, "PING", remote)
-		case "PING":
-			send_message(local, "PONG", remote)
+func handler(local net.PacketConn, data []byte, remote net.Addr) {
+	input_cmd := binary.BigEndian.Uint64(data[1:8])
+	input_payload = data[8:]
+	fmt.Printf("Recv %s fr: %s\n", input_payload.String, remote.String())
+	switch input_cmd {
+		case 0:
+			output_cmd := make([]byte, 8)
+			binary.LittleEndian.PutUint64(b, uint64(1))
+			output_payload := b"BONG"
+			output := append(output_cmd, output_payload)
+			broadcast_message(local, output)
+		case 1:
+			output_cmd := make([]byte, 8)
+			binary.LittleEndian.PutUint64(b, uint64(2))
+			output_payload := b"PING"
+			output := append(output_cmd, output_payload)
+			send_message(local, output, remote)
+		case 2:
+			output_cmd := make([]byte, 8)
+			binary.LittleEndian.PutUint64(b, uint64(3))
+			output_payload := b"PONG"
+			output := append(output_cmd, output_payload)
+			send_message(local, output, remote)
 	}
 }
 
