@@ -55,7 +55,7 @@ func listener(local net.PacketConn, size int) {
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	cmd := binary.BigEndian.Uint64(data[1:8])
+	cmd := binary.BigEndian.Uint64(data[0:8])
 	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
 	switch cmd {
 		case 0:
