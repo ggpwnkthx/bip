@@ -55,7 +55,7 @@ func listener(local net.PacketConn, size int) {
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	fmt.Printf("% 08b", data[0])
+	fmt.Printf("%08b ", data[0])
 	fmt.Printf("Recv %s fr: %s\n", string(data[1:]), remote.String())
 	switch data[0] {
 		case byte(0):
