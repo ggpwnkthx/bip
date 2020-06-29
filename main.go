@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net"
-	"strings"
 	"strconv"
 	"encoding/binary"
 )
@@ -57,23 +56,23 @@ func listener(local net.PacketConn, size int) {
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
 	input_cmd := binary.BigEndian.Uint64(data[1:8])
-	fmt.Printf("Recv %s fr: %s\n", data[8:].String, remote.String())
+	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
 	switch input_cmd {
 		case 0:
 			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(b, uint64(1))
+			binary.LittleEndian.PutUint64(output_cmd, uint64(1))
 			output_payload := []byte("BONG")
 			output := append(output_cmd, output_payload)
 			broadcast_message(local, output)
 		case 1:
 			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(b, uint64(2))
+			binary.LittleEndian.PutUint64(output_cmd, uint64(2))
 			output_payload := []byte("PING")
 			output := append(output_cmd, output_payload)
 			send_message(local, output, remote)
 		case 2:
 			output_cmd := make([]byte, 8)
-			binary.LittleEndian.PutUint64(b, uint64(3))
+			binary.LittleEndian.PutUint64(output_cmd, uint64(3))
 			output_payload := []byte("PONG")
 			output := append(output_cmd, output_payload)
 			send_message(local, output, remote)
