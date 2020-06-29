@@ -59,15 +59,15 @@ func handler(local net.PacketConn, data []byte, remote net.Addr) {
 	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
 	switch cmd {
 		case 0:
-			broadcast_message(local, build_packet(cmd++, "BONG"))
+			broadcast_message(local, build_packet(uint64(1), "BONG"))
 		case 1:
-			send_message(local, build_packet(cmd++, "PING"), remote)
+			send_message(local, build_packet(uint64(1), "PING"), remote)
 		case 2:
-			send_message(local, build_packet(cmd++, "PONG"), remote)
+			send_message(local, build_packet(uint64(1), "PONG"), remote)
 	}
 }
 
-func build_packet (cmd int, payload string) []byte {
+func build_packet (cmd uint64, payload string) []byte {
 	output_cmd := make([]byte, 8)
 	binary.LittleEndian.PutUint64(output_cmd, uint64(cmd))
 	output_payload := []byte(payload)
