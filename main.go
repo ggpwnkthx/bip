@@ -32,9 +32,13 @@ func inSlice(slice []net.IP, val net.IP) (bool) {
     return false
 }
 
-func send_message(local net.PacketConn, data []byte, remote net.Addr) {
+func loggit(data []byte, remote net.Addr) {
 	fmt.Printf("%08b ", data[0])
 	fmt.Printf("Sent %s to: %s\n", string(data[1:]), remote.String())
+}
+
+func send_message(local net.PacketConn, data []byte, remote net.Addr) {
+	loggit(data, remote)
 	local.WriteTo(data, remote)
 }
 func broadcast_message(local net.PacketConn, data []byte) {
@@ -49,13 +53,12 @@ func listener(local net.PacketConn, size int) {
 		len,remote,_ := local.ReadFrom(data)
 		remoteUDP,_ := net.ResolveUDPAddr(remote.Network(), remote.String())
 		if ! inSlice(filter, remoteUDP.IP) {
+			loggit(data, remote)
 			handler(local, data[:len], remote)
 		}
 	}
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
-	fmt.Printf("%08b ", data[0])
-	fmt.Printf("Recv %s fr: %s\n", string(data[1:]), remote.String())
 	switch data[0] {
 		case byte(0):
 			broadcast_message(local, build_packet(1, "BONG"))
