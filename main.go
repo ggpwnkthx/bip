@@ -68,11 +68,9 @@ func handler(local net.PacketConn, data []byte, remote net.Addr) {
 }
 
 func build_packet (cmd uint64, payload string) []byte {
-	output_cmd := make([]byte, 8)
+	output := make([]byte, 8)
 	binary.LittleEndian.PutUint64(output_cmd, uint64(cmd))
-	output_payload := []byte(payload)
-	output := []byte{}
-	output = append(output_cmd, output_payload)
+	output = append(output, payload)
 	return output
 }
 
