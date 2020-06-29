@@ -36,13 +36,13 @@ func inSlice(slice []string, val string) (bool) {
 }
 
 func send_message(local net.PacketConn, data []byte, remote net.Addr) {
-	fmt.Printf("Sent %s to: %s\n", message, remote.String())
-	local.WriteTo([]byte(message), remote)
+	fmt.Printf("Sent %s to: %s\n", string(data[8:]), remote.String())
+	local.WriteTo(data, remote)
 }
 func broadcast_message(local net.PacketConn, data []byte) {
 	localUDP,_ := net.ResolveUDPAddr(local.LocalAddr().Network(), local.LocalAddr().String())
 	remote,_ := net.ResolveUDPAddr("udp4", "255.255.255.255:"+strconv.Itoa(localUDP.Port))
-	send_message(local, message, remote)
+	send_message(local, data, remote)
 }
 func listener(local net.PacketConn, size int) {
 	filter := getLocalIPs()
@@ -57,8 +57,7 @@ func listener(local net.PacketConn, size int) {
 }
 func handler(local net.PacketConn, data []byte, remote net.Addr) {
 	input_cmd := binary.BigEndian.Uint64(data[1:8])
-	input_payload = data[8:]
-	fmt.Printf("Recv %s fr: %s\n", input_payload.String, remote.String())
+	fmt.Printf("Recv %s fr: %s\n", data[8:].String, remote.String())
 	switch input_cmd {
 		case 0:
 			output_cmd := make([]byte, 8)
