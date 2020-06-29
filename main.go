@@ -59,11 +59,11 @@ func handler(local net.PacketConn, data []byte, remote net.Addr) {
 	fmt.Printf("Recv %s fr: %s\n", string(data[8:]), remote.String())
 	switch cmd {
 		case 0:
-			broadcast_message(local, build_packet(cmd+1, "BONG"))
+			broadcast_message(local, build_packet(cmd++, "BONG"))
 		case 1:
-			send_message(local, build_packet(cmd+1, "PING"), remote)
+			send_message(local, build_packet(cmd++, "PING"), remote)
 		case 2:
-			send_message(local, build_packet(cmd+1, "PONG"), remote)
+			send_message(local, build_packet(cmd++, "PONG"), remote)
 	}
 }
 
