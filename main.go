@@ -34,7 +34,7 @@ func inSlice(slice []net.IP, val net.IP) (bool) {
 
 func loggit(data []byte, remote net.Addr) {
 	fmt.Printf("%08b ", data[0])
-	fmt.Printf("Sent %s to: %s\n", string(data[1:]), remote.String())
+	fmt.Printf("%s: %s\n", remote.String(), string(data[1:]))
 }
 
 func send_message(local net.PacketConn, data []byte, remote net.Addr) {
